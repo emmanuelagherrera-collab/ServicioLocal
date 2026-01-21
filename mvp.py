@@ -6,37 +6,38 @@ from folium.plugins import LocateControl
 import pandas as pd
 from streamlit_js_eval import streamlit_js_eval
 
-# 1. CONFIGURACIÓN DE PÁGINA Y ESTILO APP
+# 1. CONFIGURACIÓN DE PÁGINA
 st.set_page_config(
     layout="wide", 
     page_title="ServicioLocal", 
     initial_sidebar_state="collapsed"
 )
 
-# Inyección de CSS para que parezca una App nativa
+# CSS AVANZADO: Buscador "Sticky" y limpieza de UI
 st.markdown("""
     <style>
-        /* Ocultar header y footer de Streamlit */
         header {visibility: hidden;}
         footer {visibility: hidden;}
-        #MainMenu {visibility: hidden;}
         
-        /* Eliminar márgenes y paddings innecesarios */
+        /* Eliminar espacio superior */
         .block-container {
             padding-top: 0rem;
             padding-bottom: 0rem;
-            padding-left: 0rem;
-            padding-right: 0rem;
+        }
+
+        /* HACER QUE EL BUSCADOR SE QUEDE ARRIBA (STICKY) */
+        div[data-testid="stVerticalBlock"] > div:has(div.stSelectbox) {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background-color: white;
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
         }
         
-        /* Ajustar el contenedor del selectbox para que no flote */
+        /* Ajuste para que el mapa no se pegue al borde superior */
         .stSelectbox {
-            margin: 10px;
-        }
-        
-        /* Forzar que el mapa ocupe el resto de la pantalla */
-        iframe {
-            border-radius: 0px;
+            margin-bottom: 0px;
         }
     </style>
     """, unsafe_allow_html=True)
@@ -65,10 +66,11 @@ iconos_servicios = {
     "Otros": "info-sign"
 }
 
-# --- INTERFAZ TIPO APP ---
-# El buscador ahora parece una barra de búsqueda de App
+# --- INTERFAZ TIPO APP CON BUSCADOR FIJO ---
 categorias_disponibles = ["Todas las categorías"] + sorted(df["Categoria"].unique().tolist())
-categoria_seleccionada = st.selectbox("🔍 Buscar servicio en La Florida", categorias_disponibles)
+
+# Este elemento ahora se queda fijo arriba gracias al CSS anterior
+categoria_seleccionada = st.selectbox("🔍 Buscar en La Florida", categorias_disponibles)
 
 df_filtrado = df if categoria_seleccionada == "Todas las categorías" else df[df["Categoria"] == categoria_seleccionada]
 
@@ -87,7 +89,7 @@ for index, row in df_filtrado.iterrows():
             ig_url = row.get('Instagram', '#')
             
             html_popup = f"""
-                <div style="font-family: sans-serif; width: 150px; text-align: center;">
+                <div style="font-family: sans-serif; width: 140px; text-align: center;">
                     <b style="font-size: 14px;">{row['Nombre']}</b><br>
                     <span style="color: #007bff; font-size: 11px;">{row['Categoria']}</span><br><br>
                     <a href="{ig_url}" target="_blank" 
@@ -105,5 +107,5 @@ for index, row in df_filtrado.iterrows():
     except:
         continue
 
-# Mapa a pantalla completa (Ajustado para altura de smartphone)
-st_folium(m, width="100%", height=800, use_container_width=True)
+# Altura ajustada para dejar espacio al buscador fijo
+st_folium(m, width="100%", height=700, use_container_width=True)
