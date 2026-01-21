@@ -3,3 +3,4 @@ st-gsheets-connection
 streamlit-folium
 folium
 pandas
+streamlit-js-eval
